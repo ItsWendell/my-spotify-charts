@@ -75,7 +75,7 @@ class Spotify extends SpotifyAPI {
 	 * @returns {Promise}
 	 */
 	getNextPage(response) {
-		return this.getGenerireturnsc(response.next);
+		return this.getGeneric(response.next);
 	}
 
 	/**
