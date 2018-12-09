@@ -4,9 +4,6 @@ The aim of this project was to visualize my personal trends in listening to arti
 
 [![Latest Release](https://img.shields.io/github/release/ItsWendell/my-spotify-charts/all.svg?style=flat-square)](https://github.com/ItsWendell/my-spotify-chartsreleases)
 [![Build Status](https://img.shields.io/travis/com/ItsWendell/my-spotify-charts/develop.svg?style=flat-square)](https://travis-ci.com/ItsWendell/my-spotify-charts)
-[![Codecov coverage](https://img.shields.io/codecov/c/github/ItsWendell/my-spotify-charts/develop.svg?style=flat-square)](https://codecov.io/gh/ItsWendell/my-spotify-charts)
-[![Code Climate grade](https://img.shields.io/codeclimate/maintainability/ItsWendell/my-spotify-charts.svg?style=flat-square)](https://codeclimate.com/github/ItsWendell/my-spotify-charts)
-[![Greenkeeper](https://img.shields.io/badge/greenkeeper-enabled-brightgreen.svg?style=flat-square)](https://greenkeeper.io/)
 
 ## Getting started
 
