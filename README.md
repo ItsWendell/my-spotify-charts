@@ -1,13 +1,11 @@
-# GitHub Website
+# My Spotify Charts
 
-As an enthusiastic developer, you might find yourself racing through many projects.
-Keeping your website up to date might become a burden because of this.
-Let your work speak for itself, have a simple site shows your GitHub feed!
+The aim of this project was to visualize my personal trends in listening to artist and tracks on Spotify. Inpsired by the Spotify Wrapped camaign.
 
-[![Latest Release](https://img.shields.io/github/release/byCedric/GitHub-Website/all.svg?style=flat-square)](https://github.com/byCedric/GitHub-Website/releases)
-[![Build Status](https://img.shields.io/travis/com/byCedric/GitHub-Website/develop.svg?style=flat-square)](https://travis-ci.com/byCedric/GitHub-Website)
-[![Codecov coverage](https://img.shields.io/codecov/c/github/byCedric/GitHub-Website/develop.svg?style=flat-square)](https://codecov.io/gh/byCedric/GitHub-Website)
-[![Code Climate grade](https://img.shields.io/codeclimate/maintainability/byCedric/GitHub-Website.svg?style=flat-square)](https://codeclimate.com/github/byCedric/GitHub-Website)
+[![Latest Release](https://img.shields.io/github/release/ItsWendell/my-spotify-charts/all.svg?style=flat-square)](https://github.com/ItsWendell/my-spotify-chartsreleases)
+[![Build Status](https://img.shields.io/travis/com/ItsWendell/my-spotify-charts/develop.svg?style=flat-square)](https://travis-ci.com/ItsWendell/my-spotify-charts)
+[![Codecov coverage](https://img.shields.io/codecov/c/github/ItsWendell/my-spotify-charts/develop.svg?style=flat-square)](https://codecov.io/gh/ItsWendell/my-spotify-charts)
+[![Code Climate grade](https://img.shields.io/codeclimate/maintainability/ItsWendell/my-spotify-charts.svg?style=flat-square)](https://codeclimate.com/github/ItsWendell/my-spotify-charts)
 [![Greenkeeper](https://img.shields.io/badge/greenkeeper-enabled-brightgreen.svg?style=flat-square)](https://greenkeeper.io/)
 
 ## Getting started
@@ -19,7 +17,7 @@ Starting an instance special tailored for you is not that hard.
 It's done by running a single CLI/[Now](https://now.sh) command!
 
 ```bash
-$ now bycedric/github-website
+$ now ItsWendell/my-spotify-charts
 ```
 
 This command will ask for your GitHub username and will build the project automatically.
@@ -27,7 +25,7 @@ It might take a couple of minutes before everything is deployed and ready for us
 In case you want to automate the deployments, you can define the username in the command itself.
 
 ```bash
-$ now bycedric/github-website --build-env GITHUB_USERNAME=byCedric
+$ now ItsWendell/my-spotify-charts --build-env GITHUB_USERNAME=byCedric
 ```
 
 > Read more about [Now build arguments here](https://zeit.co/blog/build-env).
@@ -44,6 +42,10 @@ To keep the project healthy and running smoothly, a couple of rules are defined.
 
 Make something awesome!
 
+## Contributors
+
+* [byCedric](https://github.com/byCedric) - Code structure is based on his [Github Website](https://github.com/byCedric/GitHub-Website) project.
+
 ## License
 
 The MIT License (MIT). Please see [License File](LICENSE.md) for more information.
@@ -51,5 +53,5 @@ The MIT License (MIT). Please see [License File](LICENSE.md) for more informatio
 --- ---
 
 <p align="center">
-    with :heart: <a href="https://bycedric.com" target="_blank">byCedric</a>
+    Made with :heart:
 </p>
