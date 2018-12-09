@@ -24,6 +24,7 @@ export default class App extends Component {
 		playlists: [],
 		loading: false,
 		user: {},
+		tracks: [],
 	};
 
 	componentDidMount() {
@@ -84,9 +85,16 @@ export default class App extends Component {
 							name: names[type]
 						}
 					]
-				})
+				}, () => (
+					this.setState({
+						tracks: [...this.state.tracks,
+							...data,
+						]
+					})
+				)
+				)
 			))
-		));
+		))
 	}
 
 	/**
@@ -120,8 +128,6 @@ export default class App extends Component {
 			return null;
 		}
 
-		console.log('TOP TRACKS', topTracks);
-
 		const data = topTracks.items.slice(0, 6).map(({ track }, index) => ({
 			key: track.id,
 			name: track.name,
@@ -133,7 +139,6 @@ export default class App extends Component {
 				track.album.images[0].url,
 		}));
 
-		console.log('topTracks', topTracks);
 		const Grid = styled.ul`
 		    display: -moz-flex;
     		display: -ms-flexbox;
@@ -176,13 +181,20 @@ export default class App extends Component {
 	 * Render the playlists and positions based on the first playlist in the state.
 	 */
 	renderPlaylists() {
-		const playlist = this.state.playlists[0];
-		if (!playlist || !playlist.items) {
+		if (!this.state.tracks || !this.state.tracks.length) {
 			return null;
 		}
 
+		// Filter out all the double tracks...
+		const tracks = this.state.tracks
+			.filter((thing, index, self) =>
+				index === self.findIndex((t) => (
+					t.id === thing.id
+				))
+			);
+
 		// Map the playlist items with only the data we need.
-		const tableRows = playlist.items.map(({ track }, index) => ({
+		const tableRows = tracks.map((track, index) => ({
 			key: track.id,
 			index: index,
 			id: track.id,
@@ -210,8 +222,8 @@ export default class App extends Component {
 							/>
 						)}
 					</Table.Column>
-					<Table.Column truncate field="name" title="Name" />
-					<Table.Column field="artist" title="Artist" />
+					<Table.Column truncate field="name" sortable title="Name" />
+					<Table.Column field="artist" sortable title="Artist" />
 					<Table.Column field="releaseDate" title="Release Date" />
 					{this.state.playlists.map((playlist) => (
 						// This mapping renders the positions of each playlist in a individual column.
@@ -247,7 +259,7 @@ export default class App extends Component {
 								window.location.reload();
 							}}
 						>
-						Logout
+							Logout
 						</Button>
 					</div>
 					{this.renderCoverRow()}
