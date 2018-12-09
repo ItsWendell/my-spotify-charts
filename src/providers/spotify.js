@@ -119,10 +119,10 @@ class Spotify extends SpotifyAPI {
 	 * Get's all the top tracks of the current user.
 	 * @returns {Promise}
 	 */
-	getAllMyTopTracks() {
+	getAllMyTopTracks(options = {}) {
 		return new Promise((resolve, reject) => {
 			let depth = 5;
-			this.getMyTopTracks()
+			this.getMyTopTracks(options)
 				.then((response) => {
 					depth = Math.round(response.total / response.limit);
 					return this.getAllPages(response);

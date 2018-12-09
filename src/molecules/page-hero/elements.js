@@ -7,16 +7,18 @@ import { getRandomImage } from './images';
  */
 export const HeroContainer = styled.div`
 	position: relative;
-	min-height: ${props => props.fullPage ? '100vh' : '40vh'};
+	height: ${props => props.fullPage ? '100vh' : '60vh'};
 	color: white;
-	display: flex;
-    align-items: center;
-	justify-content: center;
 	flex-direction: column;
 	background: #191414;
+	overflow: hidden;
+	display: flex;
+    align-items: center;
+    justify-content: center;
 
 	* {
 		z-index: 1;
+		align-items: center;
 	}
 
 	:after {
@@ -41,8 +43,23 @@ export const HeroContainer = styled.div`
 export const HeroTitle = styled(Heading)`
 	color: white;
 	font-weight: bold;
-	text-align: center;
 `;
+
+/**
+ * The user container meta element splits the screen in half and put the avatar and user in this half.
+ * It creates some emphasis on the user's name and also allows extra information without affecting this positioning.
+ */
+
+const HeroSubtitle = styled(Heading)`
+	color: white;
+`;
+
+HeroSubtitle.defaultProps = {
+	size: 3,
+};
+
+export { HeroSubtitle };
+
 
 /**
  * The user container info element centers the user's description horizontally.
