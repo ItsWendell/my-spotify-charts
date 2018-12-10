@@ -5,27 +5,33 @@ The aim of this project was to visualize my personal trends in listening to arti
 [![Latest Release](https://img.shields.io/github/release/ItsWendell/my-spotify-charts/all.svg?style=flat-square)](https://github.com/ItsWendell/my-spotify-chartsreleases)
 [![Build Status](https://img.shields.io/travis/com/ItsWendell/my-spotify-charts/develop.svg?style=flat-square)](https://travis-ci.com/ItsWendell/my-spotify-charts)
 
-## Getting started
+## Start Developing
 
-> The getting started guide is currently unsupported, due to the recent Now v2 changes.
-> Stay tuned for updates on how to get started.
+To get started playing around in this app first ofcourse clone this repo. 
 
-Starting an instance special tailored for you is not that hard.
-It's done by running a single CLI/[Now](https://now.sh) command!
+This web app is build using a minimal Create React App setup and is all client-side. The app directly connects to the Spotify API. 
 
-```bash
-$ now ItsWendell/my-spotify-charts
-```
+In order to connect to the Spotify API we need a Client ID in our environment variables. Create one at the [Spotify Developer Dashboard](https://developer.spotify.com/dashboard/) for free.
 
-This command will ask for your GitHub username and will build the project automatically.
-It might take a couple of minutes before everything is deployed and ready for use.
-In case you want to automate the deployments, you can define the username in the command itself.
+For local development copy the `.env.example` into `.env` and set your `REACT_APP_SPOTIFY_CLIENT_ID` to your custom client ID.
+
+After that start the same way as any Create React App.
 
 ```bash
-$ now ItsWendell/my-spotify-charts --build-env GITHUB_USERNAME=byCedric
+$ npm install
+$ npm start
 ```
 
-> Read more about [Now build arguments here](https://zeit.co/blog/build-env).
+## Deploying
+
+Want to deploy directly into a instance live on [Zeit Now](https://zeit.co/now)? It's really easy. First we need to add your client ID into your 'secrets' environment variables in Zeit.
+
+Then we can simply deploy `now`.
+
+```bash
+$ now secret add REACT_APP_SPOTIFY_CLIENT_ID=YOUR_CLIENT_ID
+$ now
+```
 
 ## Contributing
 
