@@ -5,14 +5,15 @@ import {
 	selectPlaylists,
 	selectPlaylistsLoading,
 	fetchMyTopTracks,
-	selectAllTracks
+	selectAllTracks,
+	topTracksTimeRanges
 } from 'src/ducks/playlists';
 
 import moment from 'moment';
 import { spotifyClient } from 'src/providers/spotify';
 
 // TODO: Implement molecules and atoms for these components.
-import { Avatar, Spinner, ColumnLayout } from '@auth0/cosmos';
+import { Avatar, Spinner, ColumnLayout, Heading, ButtonGroup } from '@auth0/cosmos';
 import styled from 'styled-components';
 
 import Table from 'src/molecules/table';
@@ -29,18 +30,25 @@ const ColumnContainer = styled(ColumnLayout)`
 	}
 `
 class App extends Component {
-	state = {
-		playlists: [],
-		loading: false,
-		user: {},
-		tracks: [],
-	};
+
+	constructor () {
+		super();
+		this.state = {
+			playlists: [],
+			loading: false,
+			user: {},
+			tracks: [],
+			timeRanges: Object.keys(topTracksTimeRanges) || [],
+		};
+	}
+
 
 	componentDidMount() {
 		const {
 			fetchMyTopTracksAction,
 			logoutAction,
 			user,
+			fetchUserAction
 		} = this.props;
 
 		if (user) {
@@ -48,7 +56,7 @@ class App extends Component {
 		}
 
 		if (!user) {
-			fetchUser()
+			fetchUserAction()
 				.then(() => fetchMyTopTracksAction())
 				.catch(() => logoutAction())
 		}
@@ -83,10 +91,12 @@ class App extends Component {
 
 	renderCoverRow () {
 		const { playlists } = this.props;
+
 		if (!playlists) {
 			return null;
 		}
-		const topTracks = playlists.find((playlist) => playlist.name === 'Short Term');
+
+		const topTracks = playlists.find((playlist) => playlist.time_range === 'short_term');
 
 		if (!topTracks) {
 			return null;
@@ -126,19 +136,38 @@ class App extends Component {
     		width: 100%;
 		`
 		return (
-			<Grid>
-				{data.map((track) => (
-					<li style={{ width: '33.33333333%', padding: '8px', float: 'left'}}>
-						<Cover
-							key={`cover-${track.id}`}
-							cover={track.cover}
-							artist={track.artist}
-							name={track.name}
-						/>
-					</li>
-				))}
-			</Grid>
+			<div>
+				<HeroSubtitle>Your recently hot tracks...</HeroSubtitle>
+				<Grid>
+					{data.map((track) => (
+						<li style={{ width: '33.33333333%', padding: '8px', float: 'left'}}>
+							<Cover
+								key={`cover-${track.id}`}
+								cover={track.cover}
+								artist={track.artist}
+								name={track.name}
+							/>
+						</li>
+					))}
+				</Grid>
+			</div>
 		)
+	}
+
+	toggleTimeRange = (value) => {
+		if (this.state.timeRanges.includes(value)) {
+			this.setState({
+				timeRanges: this.state.timeRanges.filter((time_range) => (
+					time_range !== value
+				))
+			});
+
+			return;
+		}
+
+		this.setState({
+			timeRanges: [ ...this.state.timeRanges, value ]
+		});
 	}
 
 	/**
@@ -147,10 +176,21 @@ class App extends Component {
 	renderPlaylists() {
 		const { playlists, allTracks } = this.props;
 
+		const filteredTracks = allTracks
+			.filter((track) =>
+				this.state.timeRanges.includes(track.time_range)
+			)
+			// Filter dubble tracks
+			.filter((track, index, tracks) =>
+				index === tracks.findIndex((result) => (
+					result.id === track.id
+				))
+			);
+
 		console.log('all tracks', allTracks);
 
 		// Map the playlist items with only the data we need.
-		const tableRows = allTracks.map((track, index) => ({
+		const tableRows = filteredTracks.map((track, index) => ({
 			key: track.id,
 			index: index,
 			id: track.id,
@@ -158,7 +198,7 @@ class App extends Component {
 			name: track.name,
 			previewUrl: track.preview_url,
 			artist: track.artists && track.artists[0].name,
-			releaseDate: track.album && moment(track.album.release_date).year(),
+			year: track.album && moment(track.album.release_date).year(),
 			cover: track.album && track.album.images &&
 			track.album.images.length &&
 			track.album.images[0].url,
@@ -166,31 +206,52 @@ class App extends Component {
 
 		return (
 			<div>
+				<Heading size={2}>Your Hot Tracks... (<span>{tableRows && tableRows.length}</span>)</Heading>
+				<ButtonGroup>
+					{topTracksTimeRanges && Object.keys(topTracksTimeRanges).map((time_range) => {
+						return (
+							<Button
+								icon={this.state.timeRanges.includes(time_range) ? 'check' : null}
+								onClick={() => this.toggleTimeRange(time_range)}>
+								{topTracksTimeRanges[time_range]}
+							</Button>
+						);
+					})}
+				</ButtonGroup>
+
 				<Table
 					items={tableRows}
 				>
-					<Table.Column field="cover" title="Cover">
+					<Table.Column width="4rem" field="cover" title="Cover">
 						{row => (
 							<Avatar
 								type="resource"
 								image={row.cover}
-								size="xsmall"
+								size="large"
 							/>
 						)}
 					</Table.Column>
-					<Table.Column truncate field="name" sortable title="Name" />
+					<Table.Column field="name" sortable title="Name" />
 					<Table.Column field="artist" sortable title="Artist" />
-					<Table.Column field="releaseDate" title="Release Date" />
-					{playlists.map((playlist) => (
+					<Table.Column width="4rem" field="year" title="Year" />
+					{playlists.map((playlist) => {
 						// This mapping renders the positions of each playlist in a individual column.
-						<Table.Column key={playlist.name} sortable field={`pos-${playlist.name}`} title={playlist.name}>
-							{row => {
-								const list = row.pos.find((positions) => (
-									playlist.name === positions.name));
-								return list.position >= 0 ? list.position : '-';
-							}}
-						</Table.Column>
-					))}
+						const fieldName = `pos-${playlist.name}`;
+						return (
+							<Table.Column
+								key={playlist.name}
+								sortable
+								field={fieldName}
+								title={`${playlist.name}`}
+							>
+								{row => {
+									const list = row.pos.find((positions) => (
+										playlist.name === positions.name));
+									return list.position >= 0 ? list.position : '-';
+								}}
+							</Table.Column>
+						);
+					})}
 				</Table>
 			</div>
 		);

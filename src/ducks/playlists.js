@@ -68,6 +68,12 @@ export default persistReducer(
 	reducer
 );
 
+export const topTracksTimeRanges = {
+	'long_term': 'Lifetime',
+	'medium_term': 'Half year',
+	'short_term': 'Recent',
+};
+
 /**
  * Fetch the user of the current authentication session.
  * This should be performed everytime the app is started within SpeakAp.
@@ -75,13 +81,7 @@ export default persistReducer(
  * @return {Promise}
  */
 export const fetchMyTopTracks = createAction(FETCH, async () => {
-	const timeRanges = {
-		'long_term': 'Long Term',
-		'medium_term': 'Medium Term',
-		'short_term': 'Short Term',
-	};
-
-	const promises = Object.keys(timeRanges).map(async (time_range) => {
+	const promises = Object.keys(topTracksTimeRanges).map(async (time_range) => {
 		const topTracks = await spotifyClient.getAllMyTopTracks({
 			time_range,
 		});
@@ -91,7 +91,8 @@ export const fetchMyTopTracks = createAction(FETCH, async () => {
 			items: topTracks.map((item) => ({
 				track: item,
 			})),
-			name: timeRanges[time_range],
+			name: topTracksTimeRanges[time_range],
+			time_range,
 		}
 	});
 
@@ -132,13 +133,8 @@ export const selectAllTracks = state =>
 	state.playlists.playlists
 		.map((playlist) => ([
 			...playlist.items.map((item) => ({
-				...item.track
+				...item.track,
+				time_range: playlist.time_range || undefined,
 			}))
 		]))
 		.flat()
-		.filter((thing, index, self) =>
-			index === self.findIndex((t) => (
-				t.id === thing.id
-			))
-		);
-
