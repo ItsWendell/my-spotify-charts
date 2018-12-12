@@ -7,7 +7,7 @@ import { getRandomImage } from './images';
  */
 export const HeroContainer = styled.div`
 	position: relative;
-	height: ${props => props.fullPage ? '100vh' : '60vh'};
+	height: ${props => props.fullPage ? '100vh' : '50vh'};
 	color: white;
 	flex-direction: column;
 	background: #191414;

@@ -1,6 +1,20 @@
 import SpotifyAPI from 'spotify-web-api-js';
 import { createInstance } from 'react-async';
 
+
+/**
+ * @see https://developer.spotify.com/documentation/web-api/reference/tracks/get-audio-features/
+ */
+export const audioFeatures = {
+	"acousticness": 'Acousticness',
+	"danceability": 'Danceability',
+	"energy": 'Energy',
+	"instrumentalness": 'Intrumentalness',
+	"liveness": 'Liveness',
+	"speechiness": 'Speechiness',
+	"valence": 'Positivity',
+};
+
 /** @inheritdoc */
 class Spotify extends SpotifyAPI {
 	/** @inheritdoc */
@@ -108,6 +122,7 @@ class Spotify extends SpotifyAPI {
 			}))
 		);
 	}
+
 }
 
 export const spotifyClient = new Spotify();

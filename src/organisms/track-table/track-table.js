@@ -4,7 +4,6 @@ import moment from 'moment';
 import { Avatar } from '@auth0/cosmos';
 
 export default function TrackTable({ playlists, tracks }) {
-	console.log('tracksTable', tracks);
 	const dataSource = tracks
 		// Filter out double track id's
 		.filter((track, index, all) =>

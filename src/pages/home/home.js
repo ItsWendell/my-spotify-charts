@@ -10,11 +10,11 @@ import {
 } from 'src/ducks/playlists';
 
 import moment from 'moment';
-import { spotifyClient } from 'src/providers/spotify';
+import { spotifyClient, audioFeatures } from 'src/providers/spotify';
 
 // TODO: Implement molecules and atoms for these components.
 import { Spinner, Heading, ButtonGroup } from '@auth0/cosmos';
-import { Row, Col, BackTop } from 'antd';
+import { Row, Col, BackTop, Layout, Slider, Select } from 'antd';
 
 import Button from 'src/atoms/button';
 import PageLayout from 'src/molecules/page-layout';
@@ -24,6 +24,7 @@ import Container from 'src/atoms/container';
 import TrackTable from 'src/organisms/track-table/track-table';
 
 import { logout, fetchUser } from 'src/ducks/user';
+import CheckableTag from 'antd/lib/tag/CheckableTag';
 
 class App extends Component {
 
@@ -35,6 +36,8 @@ class App extends Component {
 			user: {},
 			tracks: [],
 			timeRanges: Object.keys(topTracksTimeRanges) || [],
+			audioFeatures: {},
+			selectedGenres: [],
 		};
 	}
 
@@ -49,6 +52,26 @@ class App extends Component {
 		fetchUserAction()
 			.then(() => fetchMyTopTracksAction())
 			.catch(() => logoutAction())
+
+		spotifyClient.getAvailableGenreSeeds().then((data) => {
+			this.setState({ genreSeeds: data.genres });
+		});
+
+		spotifyClient.getFeaturedPlaylists().then((data) => {
+			this.setState({ playlists:
+				data &&
+				data.playlists &&
+				data.playlists.items
+			});
+		});
+	}
+
+	authenticate = () => {
+		spotifyClient.authenticate(window.location.href, [
+			'user-top-read',
+			'playlist-read-private',
+			'user-library-read'
+		]);
 	}
 
 	/**
@@ -74,7 +97,7 @@ class App extends Component {
 			return null;
 		}
 
-		const data = topTracks.items.slice(0, 6).map(({ track }, index) => ({
+		const data = topTracks.items.slice(0, 18).map(({ track }, index) => ({
 			key: track.id,
 			name: track.name,
 			previewUrl: track.preview_url,
@@ -87,10 +110,9 @@ class App extends Component {
 
 		return (
 			<Fragment>
-				<HeroSubtitle>Your recently hot tracks...</HeroSubtitle>
 				<Row type="flex" gutter={16}>
 					{data.map((track) => (
-						<Col key={track.id} span={8} style={{ padding: '0.5rem' }}>
+						<Col key={track.id} span={4} style={{ padding: '0.5rem' }}>
 							<Cover
 								cover={track.cover}
 								artist={track.artist}
@@ -100,6 +122,38 @@ class App extends Component {
 					))}
 				</Row>
 			</Fragment>
+		)
+	}
+
+
+	renderPlaylistsWall() {
+		const { playlists } = this.state;
+
+		if (!playlists) {
+			return null;
+		}
+
+		const data = playlists.slice(0, 12).map((playlist) => ({
+			id: playlist.snapshot_id,
+			name: playlist.name,
+			cover: playlist.images &&
+				playlist.images.length &&
+				playlist.images[0].url,
+		}));
+
+		return (
+			<Container>
+				<Row type="flex" gutter={16}>
+					{data.map((playlist) => (
+						<Col key={playlist.id} span={4} style={{ padding: '0.5rem' }}>
+							<Cover
+								cover={playlist.cover}
+								// artist={playlist.name}
+							/>
+						</Col>
+					))}
+				</Row>
+			</Container>
 		)
 	}
 
@@ -165,50 +219,118 @@ class App extends Component {
 		const { logoutAction } = this.props;
 		return (
 			<PageHero>
-				<Container>
-					<Row type="flex" align="middle">
-						<Col span={8}>
-							<HeroTitle>Hi {userName}!</HeroTitle>
-							<HeroSubtitle>Here's all your hot tracks over time!</HeroSubtitle>
-							<Button
-								size="default"
-								icon="lock"
-								iconAlign="left"
-								onClick={() => {
-									logoutAction().then(() => {
-										window.location.reload();
-									})
-								}}
-							>
-								Logout
-							</Button>
-						</Col>
-						<Col span={14}>
-							{this.renderCoverRow()}
-						</Col>
-					</Row>
-				</Container>
+				<Row type="flex" align="middle">
+					<Col span={24}>
+						{this.renderPlaylistsWall()}
+					</Col>
+				</Row>
 			</PageHero>
 		);
 	}
 
-	render () {
-
+	renderRecommendationSliders() {
 		return (
-			<div>
+			<Row type="flex" align="middle" justify="center" style={{ marginTop: '2rem', marginBottom: '2rem' }}>
+				{Object.keys(audioFeatures).map((audioFeature) => {
+					return (
+						<Col
+							span={3}
+							style={{
+								display: 'flex',
+								alignItems: 'center',
+								flexDirection: 'column',
+							}}
+						>
+							<Slider
+								style={{ minHeight: '12rem' }}
+								key={audioFeature}
+								vertical
+								min={0}
+								max={100}
+								defaultValue={50}
+								step={1}
+								onChange={(value) => this.setState({
+									audioFeatures: {
+										...this.state.audioFeatures,
+										[audioFeature]: value / 100,
+									}
+								})}
+							/>
+							<label
+								style={{ fontWeight: 'bold', marginTop: '1rem' }}
+							>
+								{audioFeatures[audioFeature]}
+							</label>
+						</Col>
+					);
+				})}
+			</Row>
+		)
+	}
+
+	handleGenreChange(tag, checked) {
+		const { selectedGenres } = this.state;
+		const nextSelectedTags = checked
+			? [...selectedGenres, tag]
+			: selectedGenres.filter(t => t !== tag);
+		this.setState({ selectedGenres: nextSelectedTags });
+	}
+
+
+	render () {
+		const { user } = this.props;
+		const { genreSeeds } = this.state;
+		return (
+			<Layout>
 				<BackTop />
-				{this.renderHero()}
-				<Container style={{ marginTop: '2rem', marginBottom: '2rem' }}>
-					<PageLayout>
-						<PageLayout.Content>
-							{ this.state.loading && <Spinner size="large" />}
-							{spotifyClient.getAccessToken() && (
-								this.renderDashboard()
+				<Layout.Header style={{ backgroundColor: 'white' }}>
+					<Row gutter={16} type="flex" align="middle" justify="space-between" style={{ height: '100%' }}>
+						<Col span={18}>
+							<h3 style={{ marginBottom: '0' }}>Spotify Playlist Generator</h3>
+						</Col>
+						<Col span={6} style={{ textAlign: 'right' }}>
+							{!user ? (
+								<Button onClick={() => this.authenticate()}>Login to Spotify</Button>
+							) : (
+								<Button>Logout</Button>
 							)}
-						</PageLayout.Content>
-					</PageLayout>
-				</Container>
-			</div>
+						</Col>
+					</Row>
+				</Layout.Header>
+				<Layout.Content>
+					{this.renderHero()}
+					<section id="audio-features">
+						<Container style={{ marginTop: '2rem' }}>
+							<h2>Audio Features</h2>
+							{this.renderRecommendationSliders()}
+						</Container>
+					</section>
+					<section id="audio-features">
+						<Container style={{ marginTop: '2rem', marginBottom: '2rem' }}>
+							<h2>Genres</h2>
+							<Select
+								mode="tags"
+								placeholder="Select genres for this playlist (optional)"
+								onChange={checked => this.setState({ selectedGenres: checked })}
+								style={{ width: '100%' }}
+							>
+								{genreSeeds && genreSeeds.map(tag => (
+									<Select.Option
+										key={tag}
+										checked={this.state.selectedGenres.indexOf(tag) > -1}
+										style={{
+											marginBottom: '1rem',
+											textTransform: 'capitalize',
+										}}
+									>
+										{tag}
+									</Select.Option>
+								))}
+							</Select>
+						</Container>
+					</section>
+				</Layout.Content>
+			</Layout>
 		);
 	}
 }
