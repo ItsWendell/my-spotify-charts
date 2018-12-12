@@ -6,23 +6,7 @@ class Spotify extends SpotifyAPI {
 	/** @inheritdoc */
 	constructor() {
 		super();
-		this.accessTokenKey = 'spotifyAccessToken';
 		this.clientId = process.env.REACT_APP_SPOTIFY_CLIENT_ID;
-	}
-
-	/** @inheritdoc */
-	getAccessToken() {
-		const storageToken = localStorage.getItem(this.accessTokenKey);
-		if (storageToken && !super.getAccessToken()) {
-			super.setAccessToken(storageToken);
-		}
-		return storageToken || super.getAccessToken();
-	}
-
-	/** @inheritdoc */
-	setAccessToken(accessToken) {
-		localStorage.setItem(this.accessTokenKey, accessToken);
-		super.setAccessToken(accessToken);
 	}
 
 	/**
@@ -47,26 +31,6 @@ class Spotify extends SpotifyAPI {
 		if (!this.getAccessToken()) {
 			window.location.href = this.getAuthenticationUrl(redirectUrl, scopes);
 		}
-	}
-
-	/**
-	 * Detects if there's an access token in the location hash, sets the access token if it can find one.
-	 */
-	detectAccessToken() {
-		if (window.location.hash) {
-			const accessToken = new URLSearchParams(window.location.hash.substr(1)).get('access_token');
-			if (accessToken) {
-				this.setAccessToken(accessToken);
-				window.history.replaceState(null, null, ' ');
-			}
-		}
-	}
-
-	/**
-	 * Clears the local storage access token.
-	 */
-	logout() {
-		localStorage.removeItem(this.accessTokenKey);
 	}
 
 	/**
@@ -146,7 +110,7 @@ class Spotify extends SpotifyAPI {
 	}
 }
 
-export const spotify = new Spotify();
+export const spotifyClient = new Spotify();
 
 /**
  * Export a predefined React Async component instance.
@@ -155,4 +119,4 @@ export const spotify = new Spotify();
  * @see    https://github.com/ghengeveld/react-async
  * @return {React.Component}
  */
-export const AsyncUser = createInstance({ promiseFn: spotify.getMe });
+export const AsyncUser = createInstance({ promiseFn: spotifyClient.getMe });
