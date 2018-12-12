@@ -64,11 +64,9 @@ export function reducer(state = initialState, action = {}) {
 		return state;
 
 	case LOGIN_PENDING:
-		console.log('LOGIN PENDING?');
 		return { ...state, fetchUserStatus: PENDING };
 
 	case LOGIN_REJECTED:
-		console.log('LOGIN REJECTED');
 		return {
 			...state,
 			fetchUserStatus: REJECTED,

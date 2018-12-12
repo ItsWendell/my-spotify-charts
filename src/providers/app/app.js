@@ -1,7 +1,11 @@
 import React from 'react';
+import { render } from 'react-dom';
+
 import Store from 'src/providers/store';
 import Router from 'src/providers/router';
-import { render } from 'react-dom';
+
+import './app.css';
+
 
 function App({ children }) {
 	return (

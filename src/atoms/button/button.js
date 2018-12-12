@@ -1,6 +1,6 @@
-import { Button } from '@auth0/cosmos';
+import Button from 'antd/lib/button';
 
 /**
- * 
+ *
  */
 export default Button;

@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 
 import { connect } from 'react-redux';
 import {
@@ -13,22 +13,18 @@ import moment from 'moment';
 import { spotifyClient } from 'src/providers/spotify';
 
 // TODO: Implement molecules and atoms for these components.
-import { Avatar, Spinner, ColumnLayout, Heading, ButtonGroup } from '@auth0/cosmos';
-import styled from 'styled-components';
+import { Spinner, Heading, ButtonGroup } from '@auth0/cosmos';
+import { Row, Col, BackTop } from 'antd';
 
-import Table from 'src/molecules/table';
 import Button from 'src/atoms/button';
 import PageLayout from 'src/molecules/page-layout';
 import PageHero, { HeroTitle, HeroSubtitle } from 'src/molecules/page-hero';
 import Cover from 'src/molecules/spotify-cover';
 import Container from 'src/atoms/container';
+import TrackTable from 'src/organisms/track-table/track-table';
+
 import { logout, fetchUser } from 'src/ducks/user';
 
-const ColumnContainer = styled(ColumnLayout)`
-	&& {
-		align-items: center;
-	}
-`
 class App extends Component {
 
 	constructor () {
@@ -47,19 +43,12 @@ class App extends Component {
 		const {
 			fetchMyTopTracksAction,
 			logoutAction,
-			user,
 			fetchUserAction
 		} = this.props;
 
-		if (user) {
-			fetchMyTopTracksAction();
-		}
-
-		if (!user) {
-			fetchUserAction()
-				.then(() => fetchMyTopTracksAction())
-				.catch(() => logoutAction())
-		}
+		fetchUserAction()
+			.then(() => fetchMyTopTracksAction())
+			.catch(() => logoutAction())
 	}
 
 	/**
@@ -70,23 +59,6 @@ class App extends Component {
 		return !this.state.loading && playlists && playlists.length > 0 && (
 			this.renderPlaylists()
 		);
-	}
-
-	/**
-	 * Find the positions of a trackId in the other playlist within the state.
-	 * @param {String} trackId
-	 */
-	findPositions(trackId) {
-		const { playlists } = this.props;
-		const positions = playlists
-			.map((playlist) => {
-				const position = playlist.items.findIndex((item) => item.track.id === trackId);
-				return {
-					name: playlist.name,
-					position: position >= 0 ? position + 1 : position,
-				}});
-
-		return positions;
 	}
 
 	renderCoverRow () {
@@ -113,44 +85,21 @@ class App extends Component {
 				track.album.images[0].url,
 		}));
 
-		const Grid = styled.ul`
-		    display: -moz-flex;
-    		display: -ms-flexbox;
-    		display: -ms-flex;
-    		display: -webkit-box;
-    		display: flex;
-    		-ms-flex-flow: row wrap;
-    		-webkit-box-orient: horizontal;
-    		-webkit-box-direction: normal;
-    		flex-flow: row wrap;
-    		-moz-align-items: center;
-    		-ms-align-items: center;
-    		-webkit-box-align: center;
-    		-ms-flex-align: center;
-    		align-items: center;
-    		-moz-justify-content: center;
-    		-ms-justify-content: center;
-    		-webkit-box-pack: center;
-    		-ms-flex-pack: center;
-    		justify-content: center;
-    		width: 100%;
-		`
 		return (
-			<div>
+			<Fragment>
 				<HeroSubtitle>Your recently hot tracks...</HeroSubtitle>
-				<Grid>
+				<Row type="flex" gutter={16}>
 					{data.map((track) => (
-						<li style={{ width: '33.33333333%', padding: '8px', float: 'left'}}>
+						<Col key={track.id} span={8} style={{ padding: '0.5rem' }}>
 							<Cover
-								key={`cover-${track.id}`}
 								cover={track.cover}
 								artist={track.artist}
 								name={track.name}
 							/>
-						</li>
+						</Col>
 					))}
-				</Grid>
-			</div>
+				</Row>
+			</Fragment>
 		)
 	}
 
@@ -179,35 +128,12 @@ class App extends Component {
 		const filteredTracks = allTracks
 			.filter((track) =>
 				this.state.timeRanges.includes(track.time_range)
-			)
-			// Filter dubble tracks
-			.filter((track, index, tracks) =>
-				index === tracks.findIndex((result) => (
-					result.id === track.id
-				))
 			);
 
-		console.log('all tracks', allTracks);
-
-		// Map the playlist items with only the data we need.
-		const tableRows = filteredTracks.map((track, index) => ({
-			key: track.id,
-			index: index,
-			id: track.id,
-			pos: this.findPositions(track.id),
-			name: track.name,
-			previewUrl: track.preview_url,
-			artist: track.artists && track.artists[0].name,
-			year: track.album && moment(track.album.release_date).year(),
-			cover: track.album && track.album.images &&
-			track.album.images.length &&
-			track.album.images[0].url,
-		}));
-
 		return (
-			<div>
-				<Heading size={2}>Your Hot Tracks... (<span>{tableRows && tableRows.length}</span>)</Heading>
-				<ButtonGroup>
+			<Row>
+				<Heading size={2}>Your Hot Tracks...</Heading>
+				<ButtonGroup style={{ marginBottom: '2rem' }}>
 					{topTracksTimeRanges && Object.keys(topTracksTimeRanges).map((time_range) => {
 						return (
 							<Button
@@ -218,47 +144,19 @@ class App extends Component {
 						);
 					})}
 				</ButtonGroup>
-
-				<Table
-					items={tableRows}
-				>
-					<Table.Column width="4rem" field="cover" title="Cover">
-						{row => (
-							<Avatar
-								type="resource"
-								image={row.cover}
-								size="large"
-							/>
-						)}
-					</Table.Column>
-					<Table.Column field="name" sortable title="Name" />
-					<Table.Column field="artist" sortable title="Artist" />
-					<Table.Column width="4rem" field="year" title="Year" />
-					{playlists.map((playlist) => {
-						// This mapping renders the positions of each playlist in a individual column.
-						const fieldName = `pos-${playlist.name}`;
-						return (
-							<Table.Column
-								key={playlist.name}
-								sortable
-								field={fieldName}
-								title={`${playlist.name}`}
-							>
-								{row => {
-									const list = row.pos.find((positions) => (
-										playlist.name === positions.name));
-									return list.position >= 0 ? list.position : '-';
-								}}
-							</Table.Column>
-						);
-					})}
-				</Table>
-			</div>
+				<Row>
+					<TrackTable playlists={playlists} tracks={filteredTracks} />
+				</Row>
+			</Row>
 		);
 	}
 
 	renderHero() {
 		const { user } = this.props;
+
+		if (!user) {
+			return null;
+		}
 
 		const userName = (user &&
 			user.display_name &&
@@ -268,8 +166,8 @@ class App extends Component {
 		return (
 			<PageHero>
 				<Container>
-					<ColumnContainer distribution="1/3 2/3">
-						<div>
+					<Row type="flex" align="middle">
+						<Col span={8}>
 							<HeroTitle>Hi {userName}!</HeroTitle>
 							<HeroSubtitle>Here's all your hot tracks over time!</HeroSubtitle>
 							<Button
@@ -284,9 +182,11 @@ class App extends Component {
 							>
 								Logout
 							</Button>
-						</div>
-						{this.renderCoverRow()}
-					</ColumnContainer>
+						</Col>
+						<Col span={14}>
+							{this.renderCoverRow()}
+						</Col>
+					</Row>
 				</Container>
 			</PageHero>
 		);
@@ -296,6 +196,7 @@ class App extends Component {
 
 		return (
 			<div>
+				<BackTop />
 				{this.renderHero()}
 				<Container style={{ marginTop: '2rem', marginBottom: '2rem' }}>
 					<PageLayout>

@@ -65,7 +65,7 @@ class Login extends Component {
 					<HeroTitle>Discover Your Personal Taste Over Time on Spotify</HeroTitle>
 					<Button
 						size="default"
-						appearance="cta"
+						type="primary"
 						icon="lock"
 						iconAlign="left"
 						onClick={this.authenticate}

@@ -92,7 +92,7 @@ export const fetchMyTopTracks = createAction(FETCH, async () => {
 				track: item,
 			})),
 			name: topTracksTimeRanges[time_range],
-			time_range,
+			time_range: time_range,
 		}
 	});
 
