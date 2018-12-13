@@ -15,7 +15,6 @@
 		"now-build": "react-scripts build && mv build dist"
 	},
 	"dependencies": {
-		"@auth0/cosmos": "^0.10.1",
 		"antd": "^3.11.2",
 		"connected-react-router": "^6.0.0",
 		"moment": "^2.22.2",
