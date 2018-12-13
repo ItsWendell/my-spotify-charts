@@ -18,7 +18,7 @@
 		"@auth0/cosmos": "^0.10.1",
 		"antd": "^3.11.2",
 		"connected-react-router": "^6.0.0",
-		"moment": "^2.22.2",
+		"moment": "^2.23.0",
 		"prop-types": "^15.6.2",
 		"react": "^16.6.3",
 		"react-async": "^3.8.3",
@@ -32,7 +32,6 @@
 		"redux-persist": "^5.10.0",
 		"redux-promise-middleware": "^5.1.1",
 		"redux-thunk": "^2.3.0",
-		"semantic-ui-react": "^0.84.0",
 		"spotify-web-api-js": "^1.1.1",
 		"styled-components": "^4.1.2"
 	},
