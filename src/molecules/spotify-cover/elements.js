@@ -1,10 +1,9 @@
 import styled from 'styled-components/macro';
-import { Image as CosmosImage } from '@auth0/cosmos';
 
 /**
  * The user container defines some basic styling for all elements inside.
  */
-export const Image = styled(CosmosImage)`
+export const Image = styled.img`
 	width: 100%;
 	height: 100%;
     object-fit: cover;

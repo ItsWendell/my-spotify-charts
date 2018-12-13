@@ -1,5 +1,4 @@
 import styled from 'styled-components/macro';
-import { Heading } from '@auth0/cosmos';
 import { getRandomImage } from './images';
 
 /**
@@ -40,7 +39,7 @@ export const HeroContainer = styled.div`
  * The user container meta element splits the screen in half and put the avatar and user in this half.
  * It creates some emphasis on the user's name and also allows extra information without affecting this positioning.
  */
-export const HeroTitle = styled(Heading)`
+export const HeroTitle = styled.h2`
 	color: white;
 	font-weight: bold;
 `;
@@ -50,13 +49,9 @@ export const HeroTitle = styled(Heading)`
  * It creates some emphasis on the user's name and also allows extra information without affecting this positioning.
  */
 
-const HeroSubtitle = styled(Heading)`
+const HeroSubtitle = styled.h3`
 	color: white;
 `;
-
-HeroSubtitle.defaultProps = {
-	size: 3,
-};
 
 export { HeroSubtitle };
 

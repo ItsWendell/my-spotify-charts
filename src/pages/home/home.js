@@ -12,7 +12,7 @@ import {
 import moment from 'moment';
 import { spotifyClient, audioFeatures } from 'src/providers/spotify';
 
-import Layout from 'src/molecules/page-layout';
+import Layout from 'src/molecules/layout';
 import Row from 'src/molecules/row';
 import Col from 'src/molecules/col';
 
@@ -204,11 +204,6 @@ class App extends Component {
 			return null;
 		}
 
-		const userName = (user &&
-			user.display_name &&
-			user.display_name.split(' ', 1)[0]) || 'you';
-
-		const { logoutAction } = this.props;
 		return (
 			<PageHero>
 				<Row type="flex" align="middle">

@@ -1,1 +1,1 @@
-export { BackTop } from 'antd';
+export { BackTop as default } from 'antd';

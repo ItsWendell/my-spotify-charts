@@ -5,7 +5,7 @@ export default function Cover(props) {
 	return (
 		<CoverContainer>
 			<figure>
-				<Image source={props.cover} />
+				<Image src={props.cover} />
 				<ContentOverlay>
 					<ContentDetails>
 						<NameDetail>{props.name}</NameDetail>

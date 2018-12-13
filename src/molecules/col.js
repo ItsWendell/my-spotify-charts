@@ -1,1 +1,1 @@
-export { Col } from 'atnd';
+export { Col as default } from 'antd';

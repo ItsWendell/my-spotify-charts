@@ -1,8 +1,9 @@
 import React from 'react';
 import Table from 'src/molecules/table';
 import moment from 'moment';
-import { Avatar } from '@auth0/cosmos';
-import { Rate } from 'antd';
+
+import Avatar from 'src/atoms/avatar';
+import Rate from 'src/molecules/rate';
 
 export default function TrackTable({ playlists, tracks }) {
 	const dataSource = tracks

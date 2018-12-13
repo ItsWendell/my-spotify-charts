@@ -1,1 +1,1 @@
-export { Row } from 'antd';
+export { Row as default } from 'antd';

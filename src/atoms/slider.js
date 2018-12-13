@@ -1,1 +1,1 @@
-export { Slider } from 'atnd';
+export { Slider as default } from 'antd';
