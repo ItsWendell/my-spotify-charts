@@ -38,19 +38,18 @@ class App extends Component {
 			timeRanges: Object.keys(topTracksTimeRanges) || [],
 			audioFeatures: {},
 			selectedGenres: [],
+			generatedPlaylist: {},
 		};
 	}
 
 
 	componentDidMount() {
 		const {
-			fetchMyTopTracksAction,
 			logoutAction,
 			fetchUserAction
 		} = this.props;
 
 		fetchUserAction()
-			.then(() => fetchMyTopTracksAction())
 			.catch(() => logoutAction())
 
 		spotifyClient.getAvailableGenreSeeds().then((data) => {
@@ -177,29 +176,19 @@ class App extends Component {
 	 * Render the playlists and positions based on the first playlist in the state.
 	 */
 	renderPlaylists() {
-		const { playlists, allTracks } = this.props;
+		const { generatedPlaylist } = this.state;
 
-		const filteredTracks = allTracks
-			.filter((track) =>
-				this.state.timeRanges.includes(track.time_range)
-			);
+		const tracks = generatedPlaylist.tracks;
+
+		if (!tracks) {
+			return null;
+		}
 
 		return (
 			<Row>
-				<Heading size={2}>Your Hot Tracks...</Heading>
-				<ButtonGroup style={{ marginBottom: '2rem' }}>
-					{topTracksTimeRanges && Object.keys(topTracksTimeRanges).map((time_range) => {
-						return (
-							<Button
-								icon={this.state.timeRanges.includes(time_range) ? 'check' : null}
-								onClick={() => this.toggleTimeRange(time_range)}>
-								{topTracksTimeRanges[time_range]}
-							</Button>
-						);
-					})}
-				</ButtonGroup>
+				<h2>Generated Playlist</h2>
 				<Row>
-					<TrackTable playlists={playlists} tracks={filteredTracks} />
+					<TrackTable tracks={tracks} />
 				</Row>
 			</Row>
 		);
@@ -234,6 +223,7 @@ class App extends Component {
 				{Object.keys(audioFeatures).map((audioFeature) => {
 					return (
 						<Col
+							key={`slider-${audioFeature}`}
 							span={3}
 							style={{
 								display: 'flex',
@@ -247,7 +237,7 @@ class App extends Component {
 								vertical
 								min={0}
 								max={100}
-								defaultValue={50}
+								defaultValue={0}
 								step={1}
 								onChange={(value) => this.setState({
 									audioFeatures: {
@@ -274,6 +264,22 @@ class App extends Component {
 			? [...selectedGenres, tag]
 			: selectedGenres.filter(t => t !== tag);
 		this.setState({ selectedGenres: nextSelectedTags });
+	}
+
+	submitPlaylist = () => {
+		const { audioFeatures, selectedGenres } = this.state;
+		spotifyClient.getRecommendations({
+			...Object.keys(audioFeatures)
+				.reduce((features, audioFeature) => {
+					features[`target_${audioFeature}`] = audioFeatures[audioFeature];
+					return features;
+				}, {}),
+			seed_genres: selectedGenres.join(',')
+		})
+			.then((data) => {
+				console.log('Seeded Playlist', data);
+				this.setState({ generatedPlaylist: data });
+			})
 	}
 
 
@@ -327,6 +333,27 @@ class App extends Component {
 									</Select.Option>
 								))}
 							</Select>
+						</Container>
+					</section>
+					<section id="submit">
+						<Container>
+							<Row align="middle" justify="space-around">
+								<Col span={24}>
+									<Button onClick={this.submitPlaylist}>Generate Playlist</Button>
+								</Col>
+							</Row>
+						</Container>
+					</section>
+					<section id="results">
+						<Container>
+							<Row align="middle" justify="center" >
+								<Col span={24}>
+									{
+										this.state.generatedPlaylist &&
+										this.renderPlaylists()
+									}
+								</Col>
+							</Row>
 						</Container>
 					</section>
 				</Layout.Content>

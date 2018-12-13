@@ -2,6 +2,7 @@ import React from 'react';
 import Table from 'src/molecules/table';
 import moment from 'moment';
 import { Avatar } from '@auth0/cosmos';
+import { Rate } from 'antd';
 
 export default function TrackTable({ playlists, tracks }) {
 	const dataSource = tracks
@@ -23,12 +24,13 @@ export default function TrackTable({ playlists, tracks }) {
 			cover: track.album && track.album.images &&
 				track.album.images.length &&
 				track.album.images[0].url,
-			positions: playlists
+			positions: playlists && playlists
 				.reduce((positions, list) => {
 					const position = list.items.findIndex((item) => item.track.id === track.id);
 					positions[list.time_range] = position >= 0 ? position : null;
 					return positions;
 				}, {}),
+			popularity: track.popularity,
 		}));
 
 	// Defining the columms, sorting and optionally rendering
@@ -67,7 +69,23 @@ export default function TrackTable({ playlists, tracks }) {
 			dataIndex: 'year',
 			sorter: (a, b) => a.year - b.year,
 		},
-		...playlists.map((playlist) => ({
+		{
+			title: 'Popularity',
+			dataIndex: 'popularity',
+			render: (popularity) => (
+				<Rate
+					allowHalf
+					count={5}
+					disabled
+					value={(popularity / 10) / 2}
+				/>
+			),
+			sorter: (a, b) => (a.popularity - b.popularity),
+		}
+	];
+
+	if (playlists) {
+		columns.push(playlists.map((playlist) => ({
 			title: playlist.name,
 			dataIndex: `position-${playlist.time_range}`,
 			render: (value, track) => {
@@ -79,8 +97,8 @@ export default function TrackTable({ playlists, tracks }) {
 				const b = bObject.positions[playlist.time_range];
 				return a - b;
 			}
-		})),
-	];
+		})));
+	}
 
 
 	return (
