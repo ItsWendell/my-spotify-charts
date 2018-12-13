@@ -12,19 +12,22 @@ import {
 import moment from 'moment';
 import { spotifyClient, audioFeatures } from 'src/providers/spotify';
 
-// TODO: Implement molecules and atoms for these components.
-import { Spinner, Heading, ButtonGroup } from '@auth0/cosmos';
-import { Row, Col, BackTop, Layout, Slider, Select } from 'antd';
+import Layout from 'src/molecules/page-layout';
+import Row from 'src/molecules/row';
+import Col from 'src/molecules/col';
 
-import Button from 'src/atoms/button';
-import PageLayout from 'src/molecules/page-layout';
-import PageHero, { HeroTitle, HeroSubtitle } from 'src/molecules/page-hero';
+import BackTop from 'src/molecules/back-top';
+import PageHero from 'src/molecules/page-hero';
 import Cover from 'src/molecules/spotify-cover';
+
 import Container from 'src/atoms/container';
+import Slider from 'src/atoms/slider';
+import Button from 'src/atoms/button';
+import Select from 'src/atoms/select';
+
 import TrackTable from 'src/organisms/track-table/track-table';
 
 import { logout, fetchUser } from 'src/ducks/user';
-import CheckableTag from 'antd/lib/tag/CheckableTag';
 
 class App extends Component {
 
@@ -186,7 +189,7 @@ class App extends Component {
 
 		return (
 			<Row>
-				<h2>Generated Playlist</h2>
+				<h2>GeneRowarated Playlist</h2>
 				<Row>
 					<TrackTable tracks={tracks} />
 				</Row>
