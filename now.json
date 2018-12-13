@@ -1,7 +1,7 @@
 {
 	"version": 2,
-	"name": "my-spotify-charts",
-	"alias": "my-spotify-charts.now.sh",
+	"name": "spotify-playlist-generator",
+	"alias": "spotify-playlist-generator.now.sh",
 	"builds": [
 		{ "src": "package.json", "use": "@now/static-build" }
 	],
