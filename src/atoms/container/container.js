@@ -6,6 +6,13 @@ export default styled.div`
 	padding-left: 15px;
 	padding-right: 15px;
 
+	${props => props.center && `
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		flex-direction: column;
+	`}
+
 	@media (min-width: 768px) {
 	    width: 750px;
 	}

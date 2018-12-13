@@ -17,7 +17,7 @@ import Row from 'src/molecules/row';
 import Col from 'src/molecules/col';
 
 import BackTop from 'src/molecules/back-top';
-import PageHero from 'src/molecules/page-hero';
+import PageHero, { HeroTitle, HeroSubtitle } from 'src/molecules/page-hero';
 import Cover from 'src/molecules/spotify-cover';
 
 import Container from 'src/atoms/container';
@@ -27,7 +27,7 @@ import Select from 'src/atoms/select';
 
 import TrackTable from 'src/organisms/track-table/track-table';
 
-import { logout, fetchUser } from 'src/ducks/user';
+import { logout, fetchUser, loginFromBrowserUrl } from 'src/ducks/user';
 
 class App extends Component {
 
@@ -45,27 +45,39 @@ class App extends Component {
 		};
 	}
 
+	initialize() {
+		const { fetchUserAction, logoutAction } = this.props
+		fetchUserAction()
+			.catch(() => logoutAction())
+			.then(() => {
+				spotifyClient.getAvailableGenreSeeds().then((data) => {
+					this.setState({ genreSeeds: data.genres });
+				});
+
+				spotifyClient.getFeaturedPlaylists().then((data) => {
+					this.setState({
+						playlists:
+							data &&
+							data.playlists &&
+							data.playlists.items
+					});
+				});
+			});
+	}
+
 
 	componentDidMount() {
 		const {
-			logoutAction,
-			fetchUserAction
+			loginFromBrowserUrlAction
 		} = this.props;
 
-		fetchUserAction()
-			.catch(() => logoutAction())
-
-		spotifyClient.getAvailableGenreSeeds().then((data) => {
-			this.setState({ genreSeeds: data.genres });
-		});
-
-		spotifyClient.getFeaturedPlaylists().then((data) => {
-			this.setState({ playlists:
-				data &&
-				data.playlists &&
-				data.playlists.items
+		loginFromBrowserUrlAction()
+			.catch(() => null)
+			.then(() => {
+				this.initialize();
 			});
-		});
+
+		this.initialize();
 	}
 
 	authenticate = () => {
@@ -144,18 +156,16 @@ class App extends Component {
 		}));
 
 		return (
-			<Container>
-				<Row type="flex" gutter={16}>
-					{data.map((playlist) => (
-						<Col key={playlist.id} span={4} style={{ padding: '0.5rem' }}>
-							<Cover
-								cover={playlist.cover}
-								// artist={playlist.name}
-							/>
-						</Col>
-					))}
-				</Row>
-			</Container>
+			<Row type="flex" gutter={16}>
+				{data.map((playlist) => (
+					<Col key={playlist.id} span={4} style={{ padding: '0.5rem' }}>
+						<Cover
+							cover={playlist.cover}
+							// artist={playlist.name}
+						/>
+					</Col>
+				))}
+			</Row>
 		)
 	}
 
@@ -200,15 +210,24 @@ class App extends Component {
 	renderHero() {
 		const { user } = this.props;
 
-		if (!user) {
-			return null;
-		}
-
+		const userName = user && user.display_name && user.display_name.split(' ', 1)[0];
 		return (
 			<PageHero>
 				<Row type="flex" align="middle">
 					<Col span={24}>
-						{this.renderPlaylistsWall()}
+						{user && (
+							<Container center>
+								<HeroTitle>Hi {userName}!</HeroTitle>
+								<HeroSubtitle>Let's generate your own custom playlists!</HeroSubtitle>
+								{this.renderPlaylistsWall()}
+							</Container>
+						)}
+						{!user && (
+							<Container center>
+								<HeroTitle>Login to get started!</HeroTitle>
+								<Button onClick={() => this.authenticate()}>Login to Spotify</Button>
+							</Container>
+						)}
 					</Col>
 				</Row>
 			</PageHero>
@@ -282,7 +301,7 @@ class App extends Component {
 
 
 	render () {
-		const { user } = this.props;
+		const { user, logoutAction } = this.props;
 		const { genreSeeds } = this.state;
 		return (
 			<Layout>
@@ -296,7 +315,11 @@ class App extends Component {
 							{!user ? (
 								<Button onClick={() => this.authenticate()}>Login to Spotify</Button>
 							) : (
-								<Button>Logout</Button>
+								<Button onClick={() => logoutAction()
+									.then(() => window.location.reload())
+								}>
+									Logout
+								</Button>
 							)}
 						</Col>
 					</Row>
@@ -371,5 +394,6 @@ export default connect(
 		fetchMyTopTracksAction: fetchMyTopTracks,
 		fetchUserAction: fetchUser,
 		logoutAction: logout,
+		loginFromBrowserUrlAction: loginFromBrowserUrl
 	}
 )(App);
