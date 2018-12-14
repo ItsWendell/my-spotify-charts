@@ -1,9 +1,15 @@
 import React from 'react';
+import styled from 'styled-components';
+
 import Table from 'src/molecules/table';
 import moment from 'moment';
 
-import Avatar from 'src/atoms/avatar';
+import SpotifyCover from 'src/molecules/spotify-cover';
 import Rate from 'src/molecules/rate';
+
+const Cover = styled(SpotifyCover)`
+    max-width: 4rem;
+`;
 
 export default function TrackTable({ playlists, tracks }) {
 	const dataSource = tracks
@@ -39,10 +45,8 @@ export default function TrackTable({ playlists, tracks }) {
 		{
 			dataIndex: 'cover',
 			render: (cover) => (
-				<Avatar
-					type="resource"
-					size="large"
-					image={cover}
+				<Cover
+					cover={cover}
 				/>
 			)
 		},

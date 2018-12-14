@@ -3,7 +3,7 @@ import { Image, ContentOverlay, CoverContainer, ContentDetails, ArtistDetail, Na
 
 export default function Cover(props) {
 	return (
-		<CoverContainer>
+		<CoverContainer className={props.className}>
 			<figure>
 				<Image src={props.cover} />
 				<ContentOverlay>

@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react';
+import React, { Component } from 'react';
 
 import { connect } from 'react-redux';
 import {
@@ -9,7 +9,6 @@ import {
 	topTracksTimeRanges
 } from 'src/ducks/playlists';
 
-import moment from 'moment';
 import { spotifyClient, audioFeatures } from 'src/providers/spotify';
 
 import Layout from 'src/molecules/layout';
@@ -41,12 +40,21 @@ class App extends Component {
 			timeRanges: Object.keys(topTracksTimeRanges) || [],
 			audioFeatures: {},
 			selectedGenres: [],
+			selectedArtists: [],
+			selectedTracks: [],
 			generatedPlaylist: {},
+			searchArtists: [],
+			searchTracks: [],
 		};
 	}
 
 	initialize() {
-		const { fetchUserAction, logoutAction } = this.props
+		const { fetchUserAction, logoutAction, tokens } = this.props;
+
+		if (!spotifyClient.getAccessToken() && tokens) {
+			spotifyClient.setAccessToken(tokens.access_token);
+		}
+
 		fetchUserAction()
 			.catch(() => logoutAction())
 			.then(() => {
@@ -98,66 +106,36 @@ class App extends Component {
 		);
 	}
 
-	renderCoverRow () {
-		const { playlists } = this.props;
-
-		if (!playlists) {
-			return null;
-		}
-
-		const topTracks = playlists.find((playlist) => playlist.time_range === 'short_term');
-
-		if (!topTracks) {
-			return null;
-		}
-
-		const data = topTracks.items.slice(0, 18).map(({ track }, index) => ({
-			key: track.id,
-			name: track.name,
-			previewUrl: track.preview_url,
-			artist: track.artists && track.artists[0].name,
-			releaseDate: moment(track.album.release_date).year(),
-			cover: track.album.images &&
-				track.album.images.length &&
-				track.album.images[0].url,
-		}));
-
-		return (
-			<Fragment>
-				<Row type="flex" gutter={16}>
-					{data.map((track) => (
-						<Col key={track.id} span={4} style={{ padding: '0.5rem' }}>
-							<Cover
-								cover={track.cover}
-								artist={track.artist}
-								name={track.name}
-							/>
-						</Col>
-					))}
-				</Row>
-			</Fragment>
-		)
-	}
-
-
-	renderPlaylistsWall() {
+	renderCovers() {
 		const { playlists } = this.state;
 
-		if (!playlists) {
+		const { generatedPlaylist } = this.state;
+
+		if (!playlists && !generatedPlaylist) {
 			return null;
 		}
 
-		const data = playlists.slice(0, 12).map((playlist) => ({
-			id: playlist.snapshot_id,
-			name: playlist.name,
-			cover: playlist.images &&
-				playlist.images.length &&
-				playlist.images[0].url,
-		}));
+		const mapCovers = (item) => ({
+			id: item.snapshot_id || item.id,
+			cover: (item.images &&
+				item.images.length &&
+				item.images[0].url) ||
+				(item.album.images &&
+				item.album.images.length &&
+				item.album.images[0].url)
+		});
+
+		let items;
+
+		if (!generatedPlaylist || !generatedPlaylist.tracks) {
+			items = playlists.slice(0, 12).map(mapCovers);
+		} else {
+			items = generatedPlaylist.tracks.slice(0, 12).map(mapCovers);
+		}
 
 		return (
 			<Row type="flex" gutter={16}>
-				{data.map((playlist) => (
+				{items.map((playlist) => (
 					<Col key={playlist.id} span={4} style={{ padding: '0.5rem' }}>
 						<Cover
 							cover={playlist.cover}
@@ -199,7 +177,7 @@ class App extends Component {
 
 		return (
 			<Row>
-				<h2>GeneRowarated Playlist</h2>
+				<h2>Generated Playlist</h2>
 				<Row>
 					<TrackTable tracks={tracks} />
 				</Row>
@@ -219,7 +197,7 @@ class App extends Component {
 							<Container center>
 								<HeroTitle>Hi {userName}!</HeroTitle>
 								<HeroSubtitle>Let's generate your own custom playlists!</HeroSubtitle>
-								{this.renderPlaylistsWall()}
+								{this.renderCovers()}
 							</Container>
 						)}
 						{!user && (
@@ -299,10 +277,35 @@ class App extends Component {
 			})
 	}
 
+	onArtistsSearch = (value) => {
+		spotifyClient.searchArtists(value).then(({artists}) => {
+			// console.log('artists', artists);
+			this.setState({ searchArtists: artists.items });
+		});
+	}
+
+	getSeedsLeft = () => {
+		const maxSeeds = 5;
+		const { selectedGenres, selectedArtists, selectedTracks } = this.state;
+		const selectedSeeds = selectedGenres.length +
+			selectedArtists.length +
+			selectedTracks.length;
+
+		return selectedSeeds <= maxSeeds ?
+			maxSeeds - selectedSeeds :
+			0;
+	}
 
 	render () {
 		const { user, logoutAction } = this.props;
-		const { genreSeeds } = this.state;
+		const {
+			genreSeeds,
+			selectedGenres,
+			searchArtists,
+			selectedArtists,
+			searchTracks,
+			selectedTracks,
+		} = this.state;
 		return (
 			<Layout>
 				<BackTop />
@@ -332,37 +335,92 @@ class App extends Component {
 							{this.renderRecommendationSliders()}
 						</Container>
 					</section>
-					<section id="audio-features">
+					<section id="seeds">
 						<Container style={{ marginTop: '2rem', marginBottom: '2rem' }}>
-							<h2>Genres</h2>
-							<Select
-								mode="tags"
-								placeholder="Select genres for this playlist (optional)"
-								onChange={checked => this.setState({ selectedGenres: checked })}
-								style={{ width: '100%' }}
-							>
-								{genreSeeds && genreSeeds.map(tag => (
-									<Select.Option
-										key={tag}
-										checked={this.state.selectedGenres.indexOf(tag) > -1}
-										style={{
-											marginBottom: '1rem',
-											textTransform: 'capitalize',
-										}}
+							<h2>Seeds (Genres, Artists, Tracks)</h2>
+							<p>Seeds left: {this.getSeedsLeft()}</p>
+							<Row gutter={16}>
+								<Col span={8}>
+									<h3>Genres</h3>
+									<Select
+										allowClear
+										showSearch
+										mode="tags"
+										placeholder="Select genres for this playlist (optional)"
+										onChange={checked => this.setState({ selectedGenres: checked })}
+										style={{ width: '100%' }}
 									>
-										{tag}
-									</Select.Option>
-								))}
-							</Select>
+										{genreSeeds && genreSeeds.map(tag => (
+											<Select.Option
+												key={tag}
+												checked={selectedGenres.indexOf(tag) > -1}
+												style={{
+													marginBottom: '1rem',
+													textTransform: 'capitalize',
+												}}
+											>
+												{tag}
+											</Select.Option>
+										))}
+									</Select>
+								</Col>
+								<Col span={8}>
+									<h3>Artists</h3>
+									<Select
+										disabled
+										showSearch
+										mode="tags"
+										placeholder="Select artists for this playlist (optional)"
+										onChange={checked => this.setState({ selectedArtists: checked })}
+										style={{ width: '100%' }}
+										onSearch={this.onArtistsSearch}
+									>
+										{searchArtists && searchArtists.map(artist => (
+											<Select.Option
+												key={artist.id}
+												checked={selectedArtists.indexOf(artist.id) > -1}
+												style={{
+													marginBottom: '1rem',
+													textTransform: 'capitalize',
+												}}
+											>
+												{artist.name}
+											</Select.Option>
+										))}
+									</Select>
+								</Col>
+								<Col span={8}>
+									<h3>Tracks</h3>
+									<Select
+										disabled
+										showSearch
+										large
+										mode="tags"
+										placeholder="Select genres for this playlist (optional)"
+										onChange={checked => this.setState({ selectedTracks: checked })}
+										onSearch={search => console.log('track search', search)}
+										style={{ width: '100%' }}
+									>
+										{searchTracks && searchTracks.map(tag => (
+											<Select.Option
+												key={tag}
+												checked={selectedTracks.indexOf(tag) > -1}
+												style={{
+													marginBottom: '1rem',
+													textTransform: 'capitalize',
+												}}
+											>
+												{tag}
+											</Select.Option>
+										))}
+									</Select>
+								</Col>
+							</Row>
 						</Container>
 					</section>
 					<section id="submit">
-						<Container>
-							<Row align="middle" justify="space-around">
-								<Col span={24}>
-									<Button onClick={this.submitPlaylist}>Generate Playlist</Button>
-								</Col>
-							</Row>
+						<Container center style={{ marginBottom: '2rem' }}>
+							<Button onClick={this.submitPlaylist}>Generate Playlist</Button>
 						</Container>
 					</section>
 					<section id="results">
@@ -389,6 +447,7 @@ export default connect(
 		allTracks: selectAllTracks(state),
 		isLoading: selectPlaylistsLoading(state),
 		user: state && state.user && state.user.user,
+		tokens: state && state.user && state.user.tokens,
 	}),
 	{
 		fetchMyTopTracksAction: fetchMyTopTracks,

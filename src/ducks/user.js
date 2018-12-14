@@ -1,6 +1,6 @@
 import { createAction } from 'redux-actions';
 import { persistReducer } from 'redux-persist';
-import localStorage from 'redux-persist/lib/storage/session';
+import localStorage from 'redux-persist/lib/storage';
 import { PENDING, FULFILLED, REJECTED } from 'redux-promise-middleware';
 
 import { spotifyClient } from 'src/providers/spotify';

@@ -42,9 +42,7 @@ class Spotify extends SpotifyAPI {
 	 * @param {Array} scopes
 	 */
 	authenticate = (redirectUrl = window.location.href, scopes = []) => {
-		if (!this.getAccessToken()) {
-			window.location.href = this.getAuthenticationUrl(redirectUrl, scopes);
-		}
+		window.location.href = this.getAuthenticationUrl(redirectUrl, scopes);
 	}
 
 	/**
